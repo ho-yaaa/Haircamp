@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HairCamp Figma Generator</title>
+    <style>:root {
+  color-scheme: light;
+  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1f2933;
+  background: #f7f8fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+main {
+  min-height: 100vh;
+  padding: 16px;
+  background: #f7f8fa;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d9dee5;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 12px;
+  font-weight: 700;
+  color: #52606d;
+  letter-spacing: 0;
+}
+
+.topbar span {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #66788a;
+}
+
+.state-pill {
+  min-width: 76px;
+  padding: 5px 8px;
+  border: 1px solid #cad2dc;
+  border-radius: 6px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.band {
+  padding: 14px 0;
+  border-bottom: 1px solid #d9dee5;
+}
+
+.band.compact {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title,
+.file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.file-row {
+  margin-top: 8px;
+}
+
+.file-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.connected {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #256f4a;
+}
+
+.connected i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #20a66a;
+}
+
+textarea {
+  width: 100%;
+  height: 180px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #b9c2cf;
+  border-radius: 6px;
+  resize: vertical;
+  background: #ffffff;
+  color: #1f2933;
+  line-height: 1.45;
+  outline: none;
+}
+
+textarea:focus,
+select:focus {
+  border-color: #2670d9;
+  box-shadow: 0 0 0 2px rgba(38, 112, 217, 0.16);
+}
+
+.drop-zone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  margin-top: 8px;
+  border: 1px dashed #98a6b8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #52606d;
+  font-size: 12px;
+}
+
+.drop-zone.dragging {
+  border-color: #2670d9;
+  background: #eef5ff;
+}
+
+.drop-zone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+select {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 1px solid #b9c2cf;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2933;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid #d9dee5;
+}
+
+button {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.primary {
+  background: #1f2933;
+  color: #ffffff;
+}
+
+.accent {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.ghost {
+  min-height: 28px;
+  padding: 0 8px;
+  border-color: #cad2dc;
+  background: #ffffff;
+  color: #52606d;
+  font-size: 12px;
+}
+
+.status-list {
+  display: grid;
+  gap: 7px;
+  max-height: 180px;
+  margin-top: 10px;
+  overflow: auto;
+}
+
+.status-item {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 6px;
+  align-items: start;
+  padding: 8px;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.status-item span {
+  font-weight: 800;
+}
+
+.status-item.success span {
+  color: #168451;
+}
+
+.status-item.warning span {
+  color: #9a6700;
+}
+
+.status-item.error span {
+  color: #c24135;
+}
+
+.status-item.info span {
+  color: #2670d9;
+}
+
+.empty-status {
+  padding: 14px;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #66788a;
+  font-size: 12px;
+}
+</style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>"use strict";
+(() => {
+  // src/shared/constants.ts
+  var PLUGIN_VERSION = "v1.0";
+  var templates = [
+    {
+      id: "haircamp-detail-v1",
+      displayName: "HairCamp DETAIL_PAGE",
+      sourceFrameName: "DETAIL_PAGE",
+      duplicateGap: 200
+    }
+  ];
+  var defaultTemplateId = templates[0].id;
+
+  // src/shared/schema.ts
+  function makeSignature(jsonText2, templateId) {
+    let hash = 5381;
+    const source = `${templateId}
+${jsonText2}`;
+    for (let index = 0; index < source.length; index += 1) {
+      hash = hash * 33 ^ source.charCodeAt(index);
+    }
+    return (hash >>> 0).toString(16);
+  }
+
+  // src/ui/main.ts
+  var app = document.querySelector("#app");
+  if (!app) throw new Error("App root not found");
+  var appRoot = app;
+  var jsonText = "";
+  var selectedTemplateId = defaultTemplateId;
+  var fileName = "\uD604\uC7AC Figma \uD30C\uC77C";
+  var uiState = "idle";
+  var statusItems = [];
+  var lastValidSignature = "";
+  var lastValidationOk = false;
+  function post(message) {
+    parent.postMessage({ pluginMessage: message }, "*");
+  }
+  function severityMark(severity) {
+    if (severity === "success") return "\u2713";
+    if (severity === "warning") return "!";
+    if (severity === "error") return "\xD7";
+    return "\u2022";
+  }
+  function setStatusFromResult(result, validState, invalidState) {
+    statusItems = result.items;
+    lastValidSignature = result.ok && result.signature ? result.signature : "";
+    lastValidationOk = result.ok;
+    uiState = result.ok ? validState : invalidState;
+    render();
+  }
+  async function readJsonFile(file) {
+    if (!file.name.toLowerCase().endsWith(".json")) {
+      statusItems = [{ severity: "error", message: ".json \uD30C\uC77C\uB9CC \uC5C5\uB85C\uB4DC\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4." }];
+      uiState = "failed";
+      render();
+      return;
+    }
+    jsonText = await file.text();
+    resetValidation([{ severity: "info", message: `${file.name} \uD30C\uC77C \uB0B4\uC6A9\uC744 \uBD88\uB7EC\uC654\uC2B5\uB2C8\uB2E4.` }]);
+  }
+  function resetValidation(nextItems = []) {
+    lastValidSignature = "";
+    lastValidationOk = false;
+    statusItems = nextItems;
+    uiState = jsonText.length > 0 ? "has-json" : "idle";
+    render();
+  }
+  function renderStatus() {
+    if (statusItems.length === 0) {
+      return `<div class="empty-status">JSON\uC744 \uC785\uB825\uD55C \uB4A4 Validate\uB97C \uC2E4\uD589\uD558\uC138\uC694.</div>`;
+    }
+    return statusItems.map((item) => `<div class="status-item ${item.severity}"><span>${severityMark(item.severity)}</span><p>${escapeHtml(item.message)}</p></div>`).join("");
+  }
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => {
+      const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+      return map[char];
+    });
+  }
+  function render() {
+    const isBusy = uiState === "validating" || uiState === "generating";
+    const currentSignature = makeSignature(jsonText, selectedTemplateId);
+    const canValidate = jsonText.length > 0 && !isBusy;
+    const canGenerate = lastValidationOk && lastValidSignature === currentSignature && !isBusy;
+    const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
+    appRoot.innerHTML = `
+    <main>
+      <header class="topbar">
+        <div>
+          <h1>HairCamp Figma Generator</h1>
+          <span>${PLUGIN_VERSION}</span>
+        </div>
+        <span class="state-pill">${stateLabel(uiState)}</span>
+      </header>
+
+      <section class="band">
+        <h2>\uD604\uC7AC Figma \uD30C\uC77C</h2>
+        <div class="file-row">
+          <strong>${escapeHtml(fileName)}</strong>
+          <span class="connected"><i></i>\uC5F0\uACB0\uB428</span>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="section-title">
+          <h2>JSON \uB370\uC774\uD130</h2>
+          <button id="clearBtn" class="ghost" ${isBusy || jsonText.length === 0 ? "disabled" : ""}>\uC785\uB825 \uB0B4\uC6A9 \uC9C0\uC6B0\uAE30</button>
+        </div>
+        <textarea id="jsonInput" spellcheck="false" placeholder="ChatGPT\uAC00 \uC791\uC131\uD55C HairCamp JSON\uC744 \uBD99\uC5EC\uB123\uC73C\uC138\uC694." ${isBusy ? "disabled" : ""}>${escapeHtml(jsonText)}</textarea>
+        <div id="dropZone" class="drop-zone">
+          <input id="fileInput" type="file" accept=".json,application/json" ${isBusy ? "disabled" : ""} />
+          <span>JSON \uD30C\uC77C \uC5C5\uB85C\uB4DC \uB610\uB294 \uB4DC\uB798\uADF8 \uC564 \uB4DC\uB86D</span>
+        </div>
+      </section>
+
+      <section class="band compact">
+        <h2>Template</h2>
+        <select id="templateSelect" ${isBusy ? "disabled" : ""}>
+          ${templates.map((template) => `<option value="${template.id}" ${template.id === selectedTemplate.id ? "selected" : ""}>${template.displayName}</option>`).join("")}
+        </select>
+      </section>
+
+      <section class="actions">
+        <button id="validateBtn" class="primary" ${canValidate ? "" : "disabled"}>${uiState === "validating" ? "\uAC80\uC0AC \uC911..." : "Validate"}</button>
+        <button id="generateBtn" class="accent" ${canGenerate ? "" : "disabled"}>${uiState === "generating" ? "\uC0DD\uC131 \uC911..." : "Generate"}</button>
+      </section>
+
+      <section class="band status-band">
+        <h2>\uAC80\uC0AC \uBC0F \uC791\uC5C5 \uC0C1\uD0DC</h2>
+        <div class="status-list">${renderStatus()}</div>
+      </section>
+    </main>
+  `;
+    bindEvents();
+  }
+  function stateLabel(state) {
+    const labels = {
+      idle: "\uAE30\uBCF8",
+      "has-json": "JSON \uC785\uB825\uB428",
+      validating: "\uAC80\uC0AC \uC911",
+      valid: "\uAC80\uC0AC \uC131\uACF5",
+      invalid: "\uAC80\uC0AC \uC2E4\uD328",
+      generating: "\uC0DD\uC131 \uC911",
+      generated: "\uC0DD\uC131 \uC131\uACF5",
+      failed: "\uC0DD\uC131 \uC2E4\uD328"
+    };
+    return labels[state];
+  }
+  function bindEvents() {
+    document.querySelector("#jsonInput")?.addEventListener("input", (event) => {
+      jsonText = event.target.value;
+      resetValidation();
+    });
+    document.querySelector("#clearBtn")?.addEventListener("click", () => {
+      jsonText = "";
+      resetValidation();
+    });
+    document.querySelector("#templateSelect")?.addEventListener("change", (event) => {
+      selectedTemplateId = event.target.value;
+      resetValidation();
+    });
+    document.querySelector("#fileInput")?.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (file) await readJsonFile(file);
+    });
+    const dropZone = document.querySelector("#dropZone");
+    dropZone?.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      dropZone.classList.add("dragging");
+    });
+    dropZone?.addEventListener("dragleave", () => dropZone.classList.remove("dragging"));
+    dropZone?.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("dragging");
+      const file = event.dataTransfer?.files?.[0];
+      if (file) await readJsonFile(file);
+    });
+    document.querySelector("#validateBtn")?.addEventListener("click", () => {
+      uiState = "validating";
+      statusItems = [{ severity: "info", message: "JSON\uACFC Figma \uD15C\uD50C\uB9BF\uC744 \uAC80\uC0AC\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." }];
+      render();
+      post({ type: "validate", jsonText, templateId: selectedTemplateId, signature: makeSignature(jsonText, selectedTemplateId) });
+    });
+    document.querySelector("#generateBtn")?.addEventListener("click", () => {
+      uiState = "generating";
+      statusItems = [{ severity: "info", message: "\uBCF5\uC81C\uBCF8\uC744 \uC0DD\uC131\uD558\uACE0 \uD14D\uC2A4\uD2B8\uB97C \uC785\uB825\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." }];
+      render();
+      post({ type: "generate", jsonText, templateId: selectedTemplateId, signature: lastValidSignature });
+    });
+  }
+  window.onmessage = (event) => {
+    const message = event.data.pluginMessage;
+    if (!message) return;
+    if (message.type === "file-info") {
+      fileName = message.fileName;
+      render();
+      return;
+    }
+    if (message.type === "validation-result") {
+      setStatusFromResult(message.result, "valid", "invalid");
+      return;
+    }
+    if (message.type === "generation-result") {
+      setStatusFromResult(message.result, "generated", "failed");
+    }
+  };
+  post({ type: "request-file-info" });
+  render();
+})();
+</script>
+  </body>
+</html>
