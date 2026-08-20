@@ -1,8 +1,11 @@
 "use strict";
 (() => {
   // src/shared/constants.ts
-  var PLUGIN_VERSION = "v1.0";
+  var PLUGIN_VERSION = "v1.1";
   var TEXT_LAYER_PREFIX = "TXT_";
+  var IMAGE_LAYER_PREFIX = "IMG_";
+  var MAX_IMAGE_DIMENSION = 4096;
+  var SUPPORTED_IMAGE_MIME_TYPES = ["image/png", "image/jpeg"];
   var templates = [
     {
       id: "haircamp-detail-v1",
@@ -12,18 +15,110 @@
     }
   ];
   var defaultTemplateId = templates[0].id;
+  var imageSlots = [
+    {
+      id: "hero",
+      displayName: "\uD074\uB798\uC2A4 \uCEE4\uBC84 \uC774\uBBF8\uC9C0",
+      groupName: "\uD074\uB798\uC2A4 \uCEE4\uBC84",
+      sectionName: "Main banner",
+      layerName: "IMG_HERO",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook1",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 1",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK1",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook2",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 2",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK2",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook3",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 3",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK3",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook4",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 4",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK4",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "feature1",
+      displayName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0 1",
+      groupName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_3",
+      layerName: "IMG_FEATURE1",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "feature2",
+      displayName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0 2",
+      groupName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_3",
+      layerName: "IMG_FEATURE2",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "feature3",
+      displayName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0 3",
+      groupName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_3",
+      layerName: "IMG_FEATURE3",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "curriculum1",
+      displayName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0 1",
+      groupName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0",
+      sectionName: "Class_6",
+      layerName: "IMG_CURRICULUM1",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "curriculum2",
+      displayName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0 2",
+      groupName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0",
+      sectionName: "Class_6",
+      layerName: "IMG_CURRICULUM2",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "curriculum3",
+      displayName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0 3",
+      groupName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0",
+      sectionName: "Class_6",
+      layerName: "IMG_CURRICULUM3",
+      required: false,
+      defaultScaleMode: "FILL"
+    }
+  ];
 
   // src/shared/schema.ts
   var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-  function makeSignature(jsonText, templateId) {
-    let hash = 5381;
-    const source = `${templateId}
-${jsonText}`;
-    for (let index = 0; index < source.length; index += 1) {
-      hash = hash * 33 ^ source.charCodeAt(index);
-    }
-    return (hash >>> 0).toString(16);
-  }
   function parseJsonText(jsonText) {
     const items = [];
     if (jsonText.length === 0) {
@@ -99,12 +194,87 @@ ${jsonText}`;
     return Object.values(data.sections).reduce((sum, section) => sum + Object.keys(section).length, 0);
   }
 
+  // src/shared/images.ts
+  var supportedExtensions = [".png", ".jpg", ".jpeg"];
+  function getImageSlot(slotId) {
+    return imageSlots.find((slot) => slot.id === slotId);
+  }
+  function isSupportedImageType(fileName, mimeType) {
+    const lowerName = fileName.toLowerCase();
+    const hasSupportedExtension = supportedExtensions.some((extension) => lowerName.endsWith(extension));
+    const hasSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(mimeType);
+    return hasSupportedExtension && hasSupportedMime;
+  }
+  function isValidScaleMode(value) {
+    return value === "FILL" || value === "FIT";
+  }
+  function makeImageSignature(images) {
+    const source = images.map((image) => `${image.slotId}:${image.fileName}:${image.mimeType}:${image.byteLength}:${image.width}x${image.height}:${image.scaleMode}`).sort().join("|");
+    let hash = 5381;
+    for (let index = 0; index < source.length; index += 1) {
+      hash = hash * 33 ^ source.charCodeAt(index);
+    }
+    return (hash >>> 0).toString(16);
+  }
+  function makeCombinedSignature(jsonText, templateId, images) {
+    let hash = 5381;
+    const source = `${templateId}
+${jsonText}
+${makeImageSignature(images)}`;
+    for (let index = 0; index < source.length; index += 1) {
+      hash = hash * 33 ^ source.charCodeAt(index);
+    }
+    return (hash >>> 0).toString(16);
+  }
+  function validateSelectedImages(images) {
+    const items = [];
+    const seen = /* @__PURE__ */ new Set();
+    if (images.length === 0) {
+      return [{ severity: "info", message: "\uC120\uD0DD\uB41C \uC774\uBBF8\uC9C0 \uC5C6\uC74C \xB7 \uD14D\uC2A4\uD2B8\uB9CC \uC0DD\uC131\uB429\uB2C8\uB2E4." }];
+    }
+    for (const image of images) {
+      const slot = getImageSlot(image.slotId);
+      if (!slot) {
+        items.push({ severity: "error", message: `${image.slotId} \uC774\uBBF8\uC9C0 \uC2AC\uB86F\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.` });
+        continue;
+      }
+      if (seen.has(image.slotId)) {
+        items.push({ severity: "error", message: `${slot.displayName} \uC774\uBBF8\uC9C0\uAC00 \uC911\uBCF5 \uC120\uD0DD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.` });
+      }
+      seen.add(image.slotId);
+      if (!isSupportedImageType(image.fileName, image.mimeType)) {
+        items.push({
+          severity: "error",
+          message: `${slot.displayName}: \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uB294 \uC774\uBBF8\uC9C0 \uD615\uC2DD\uC785\uB2C8\uB2E4. PNG, JPG \uB610\uB294 JPEG \uD30C\uC77C\uC744 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.`
+        });
+      }
+      if (image.width <= 0 || image.height <= 0 || image.byteLength <= 0 || image.bytes.length === 0) {
+        items.push({ severity: "error", message: `${slot.displayName}: \uC774\uBBF8\uC9C0 \uB370\uC774\uD130\uAC00 \uC815\uC0C1\uC801\uC774\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.` });
+      }
+      if (image.width > MAX_IMAGE_DIMENSION || image.height > MAX_IMAGE_DIMENSION) {
+        items.push({
+          severity: "error",
+          message: `${slot.displayName}: \uC774\uBBF8\uC9C0 \uD06C\uAE30\uAC00 ${MAX_IMAGE_DIMENSION}px\uC744 \uCD08\uACFC\uD569\uB2C8\uB2E4. \uD604\uC7AC ${image.width}x${image.height}px\uC785\uB2C8\uB2E4.`
+        });
+      }
+      if (!isValidScaleMode(image.scaleMode)) {
+        items.push({ severity: "error", message: `${slot.displayName}: \uC774\uBBF8\uC9C0 \uB9DE\uCDA4 \uBC29\uC2DD\uC740 FILL \uB610\uB294 FIT\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4.` });
+      }
+    }
+    if (!items.some((item) => item.severity === "error")) {
+      items.push({ severity: "success", message: `\uC120\uD0DD\uD55C \uC774\uBBF8\uC9C0 ${images.length}\uAC1C \uAC80\uC99D \uC644\uB8CC` });
+      items.push({ severity: "info", message: "\uC120\uD0DD\uD558\uC9C0 \uC54A\uC740 \uC774\uBBF8\uC9C0 \uC601\uC5ED\uC740 \uAE30\uC874 \uC774\uBBF8\uC9C0\uAC00 \uC720\uC9C0\uB429\uB2C8\uB2E4." });
+    }
+    return items;
+  }
+
   // src/shared/messages.ts
   var success = (message) => ({ severity: "success", message });
   var error = (message) => ({ severity: "error", message });
 
   // src/plugin/figma-search.ts
   var hasChildren = (node) => "children" in node;
+  var hasFills = (node) => "fills" in node && node.type !== "TEXT";
   function walk(node, visit) {
     visit(node);
     if (!hasChildren(node)) return;
@@ -178,6 +348,30 @@ ${jsonText}`;
     }
     return { node: matches[0], items: [success(`${layerName} Text Layer\uB97C \uCC3E\uC558\uC2B5\uB2C8\uB2E4.`)] };
   }
+  function findImageLayer(section, slot) {
+    const matches = [];
+    if (!hasChildren(section)) {
+      return { items: [error(`${section.name} \uB0B4\uBD80\uB97C \uAC80\uC0C9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.`)] };
+    }
+    walk(section, (node) => {
+      if (node !== section && node.name === slot.layerName) {
+        matches.push(node);
+      }
+    });
+    if (!slot.layerName.startsWith(IMAGE_LAYER_PREFIX)) {
+      return { items: [error(`${slot.layerName} \uB808\uC774\uC5B4 \uC774\uB984\uC740 IMG_\uB85C \uC2DC\uC791\uD574\uC57C \uD569\uB2C8\uB2E4.`)] };
+    }
+    if (matches.length === 0) {
+      return { items: [error(`${slot.sectionName} \uC548\uC5D0\uC11C ${slot.layerName} \uB808\uC774\uC5B4\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.`)] };
+    }
+    if (matches.length > 1) {
+      return { items: [error(`${slot.sectionName} \uC548\uC5D0 ${slot.layerName} \uB808\uC774\uC5B4\uAC00 ${matches.length}\uAC1C \uBC1C\uACAC\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uB808\uC774\uC5B4 \uC774\uB984\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.`)] };
+    }
+    if (!hasFills(matches[0]) || matches[0].fills === figma.mixed) {
+      return { items: [error(`${slot.layerName}\uC740 \uC774\uBBF8\uC9C0\uB97C \uC801\uC6A9\uD560 \uC218 \uC788\uB294 \uB808\uC774\uC5B4\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uC0AC\uC9C4 Fill\uC774 \uC801\uC6A9\uB41C \uB3C4\uD615 \uB610\uB294 \uD504\uB808\uC784\uC778\uC9C0 \uD655\uC778\uD574 \uC8FC\uC138\uC694.`)] };
+    }
+    return { node: matches[0], items: [success(`${slot.displayName} \uB300\uC0C1 \uB808\uC774\uC5B4\uB97C \uCC3E\uC558\uC2B5\uB2C8\uB2E4.`)] };
+  }
   function collectTargets(root, data) {
     const targets = /* @__PURE__ */ new Map();
     const items = [];
@@ -191,6 +385,26 @@ ${jsonText}`;
         if (layerResult.node) {
           targets.set(`${sectionName}\0${layerName}`, layerResult.node);
         }
+      }
+    }
+    return { targets, items };
+  }
+  function collectImageTargets(root, images) {
+    const targets = /* @__PURE__ */ new Map();
+    const items = [];
+    for (const image of images) {
+      const slot = getImageSlot(image.slotId);
+      if (!slot) {
+        items.push(error(`${image.slotId} \uC774\uBBF8\uC9C0 \uC2AC\uB86F\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.`));
+        continue;
+      }
+      const sectionResult = findSection(root, slot.sectionName);
+      items.push(...sectionResult.items);
+      if (!sectionResult.node) continue;
+      const layerResult = findImageLayer(sectionResult.node, slot);
+      items.push(...layerResult.items);
+      if (layerResult.node) {
+        targets.set(slot.id, layerResult.node);
       }
     }
     return { targets, items };
@@ -243,13 +457,14 @@ ${jsonText}`;
   function getTemplate(templateId) {
     return templates.find((template) => template.id === templateId) ?? templates[0];
   }
-  async function validateAll(jsonText, templateId) {
+  async function validateAll(jsonText, templateId, images = []) {
     const template = getTemplate(templateId);
     const parsed = parseJsonText(jsonText);
-    const signature = makeSignature(jsonText, template.id);
+    const signature = makeCombinedSignature(jsonText, template.id, images);
     const items = [...parsed.items];
+    const imageItems = validateSelectedImages(images);
     if (!parsed.ok || !parsed.data) {
-      return { ok: false, items, signature };
+      return { ok: false, items: [...items, ...imageItems], signature, imageCount: images.length };
     }
     const sourceResult = findUniqueSourceFrame(template);
     items.push(...sourceResult.items);
@@ -266,6 +481,16 @@ ${jsonText}`;
     }
     const fontItems = await loadFontsForTargets(targetResult.targets.values());
     items.push(...fontItems);
+    items.push(...imageItems);
+    if (images.length > 0 && !imageItems.some((item) => item.severity === "error")) {
+      const imageTargetResult = collectImageTargets(sourceResult.node, images);
+      items.push(...imageTargetResult.items);
+      if (imageTargetResult.targets.size === images.length) {
+        items.push(success(`\uC120\uD0DD\uD55C \uC774\uBBF8\uC9C0 \uC2AC\uB86F ${imageTargetResult.targets.size}\uAC1C\uB97C \uD655\uC778\uD588\uC2B5\uB2C8\uB2E4.`));
+      } else {
+        items.push(error(`\uC120\uD0DD\uD55C \uC774\uBBF8\uC9C0 \uC2AC\uB86F ${images.length}\uAC1C \uC911 ${imageTargetResult.targets.size}\uAC1C\uB9CC \uD655\uC778\uD588\uC2B5\uB2C8\uB2E4.`));
+      }
+    }
     const ok = !items.some((item) => item.severity === "error");
     if (ok) {
       items.push(success("Generate\uB97C \uC2E4\uD589\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."));
@@ -275,22 +500,24 @@ ${jsonText}`;
       data: parsed.data,
       items,
       signature,
-      targetCount: targetResult.targets.size
+      targetCount: targetResult.targets.size,
+      imageCount: images.length
     };
   }
 
   // src/plugin/generator.ts
-  async function generate(jsonText, templateId, expectedSignature) {
+  async function generate(jsonText, templateId, expectedSignature, images = []) {
     const template = getTemplate(templateId);
-    const signature = makeSignature(jsonText, template.id);
+    const signature = makeCombinedSignature(jsonText, template.id, images);
     if (signature !== expectedSignature) {
       return {
         ok: false,
         signature,
-        items: [error("JSON \uB610\uB294 Template\uC774 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC Validate\uB97C \uC2E4\uD589\uD574 \uC8FC\uC138\uC694.")]
+        imageCount: images.length,
+        items: [error("JSON, Template \uB610\uB294 \uC774\uBBF8\uC9C0 \uC120\uD0DD \uC0C1\uD0DC\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC Validate\uB97C \uC2E4\uD589\uD574 \uC8FC\uC138\uC694.")]
       };
     }
-    const validation = await validateAll(jsonText, template.id);
+    const validation = await validateAll(jsonText, template.id, images);
     if (!validation.ok || !validation.data) {
       return validation;
     }
@@ -304,6 +531,11 @@ ${jsonText}`;
     const items = [success("Generate \uC804 \uC6D0\uBCF8 DETAIL_PAGE\uB97C \uB2E4\uC2DC \uD655\uC778\uD588\uC2B5\uB2C8\uB2E4.")];
     let clone;
     try {
+      const imageFileItems = validateSelectedImages(images);
+      const imageFileError = imageFileItems.find((item) => item.severity === "error");
+      if (imageFileError) {
+        throw new Error(imageFileError.message);
+      }
       clone = source.clone();
       clone.name = parsed.data.frameName;
       placeCloneBesideSource(clone, source, template);
@@ -333,12 +565,41 @@ ${jsonText}`;
         }
       }
       items.push(success(`${changedCount}\uAC1C \uD14D\uC2A4\uD2B8\uB97C \uC785\uB825\uD588\uC2B5\uB2C8\uB2E4.`));
+      let changedImageCount = 0;
+      if (images.length > 0) {
+        items.push(success("\uC774\uBBF8\uC9C0 \uC801\uC6A9\uC744 \uC2DC\uC791\uD569\uB2C8\uB2E4."));
+        const imageTargetResult = collectImageTargets(clone, images);
+        items.push(...imageTargetResult.items);
+        if (imageTargetResult.targets.size !== images.length) {
+          throw new Error(`\uC120\uD0DD\uD55C \uC774\uBBF8\uC9C0 \uC2AC\uB86F ${images.length}\uAC1C \uC911 ${imageTargetResult.targets.size}\uAC1C\uB9CC \uD655\uC778\uD588\uC2B5\uB2C8\uB2E4.`);
+        }
+        for (const selectedImage of images) {
+          const slot = getImageSlot(selectedImage.slotId);
+          const target = imageTargetResult.targets.get(selectedImage.slotId);
+          if (!slot || !target) {
+            throw new Error(`${selectedImage.slotId} \uC774\uBBF8\uC9C0 \uC2AC\uB86F\uC744 \uC801\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.`);
+          }
+          const image = figma.createImage(new Uint8Array(selectedImage.bytes));
+          target.fills = [
+            {
+              type: "IMAGE",
+              imageHash: image.hash,
+              scaleMode: selectedImage.scaleMode
+            }
+          ];
+          items.push(success(`${slot.displayName} \uC774\uBBF8\uC9C0\uB97C \uC801\uC6A9\uD588\uC2B5\uB2C8\uB2E4.`));
+          changedImageCount += 1;
+        }
+        items.push(success(`${changedImageCount}\uAC1C \uC774\uBBF8\uC9C0\uB97C \uC801\uC6A9\uD588\uC2B5\uB2C8\uB2E4.`));
+      } else {
+        items.push(success("\uC120\uD0DD\uB41C \uC774\uBBF8\uC9C0 \uC5C6\uC74C \xB7 \uD14D\uC2A4\uD2B8\uB9CC \uC0DD\uC131\uD588\uC2B5\uB2C8\uB2E4."));
+      }
       items.push(success("\uC6D0\uBCF8 DETAIL_PAGE \uBCF4\uD638\uB97C \uD655\uC778\uD588\uC2B5\uB2C8\uB2E4."));
       figma.currentPage.selection = [clone];
       figma.viewport.scrollAndZoomIntoView([clone]);
       figma.notify("HairCamp \uC0C1\uC138\uD398\uC774\uC9C0 \uC0DD\uC131\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.");
       items.push(success("HairCamp \uC0C1\uC138\uD398\uC774\uC9C0 \uCD08\uC548\uC774 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4."));
-      return { ok: true, data: parsed.data, items, signature, targetCount: changedCount };
+      return { ok: true, data: parsed.data, items, signature, targetCount: changedCount, imageCount: changedImageCount };
     } catch (caught) {
       if (clone) {
         clone.remove();
@@ -349,7 +610,8 @@ ${jsonText}`;
         ok: false,
         data: parsed.data,
         items: [...items, error(message), success("\uC2E4\uD328\uD55C \uBCF5\uC81C\uBCF8\uC744 \uC0AD\uC81C\uD588\uACE0 \uC6D0\uBCF8\uC740 \uC720\uC9C0\uD588\uC2B5\uB2C8\uB2E4.")],
-        signature
+        signature,
+        imageCount: images.length
       };
     }
   }
@@ -366,12 +628,12 @@ ${jsonText}`;
       return;
     }
     if (message.type === "validate") {
-      const result = await validateAll(message.jsonText, message.templateId || defaultTemplateId);
+      const result = await validateAll(message.jsonText, message.templateId || defaultTemplateId, message.images);
       post({ type: "validation-result", result });
       return;
     }
     if (message.type === "generate") {
-      const result = await generate(message.jsonText, message.templateId || defaultTemplateId, message.signature);
+      const result = await generate(message.jsonText, message.templateId || defaultTemplateId, message.signature, message.images);
       post({ type: "generation-result", result });
     }
   };

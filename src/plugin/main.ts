@@ -18,13 +18,13 @@ figma.ui.onmessage = async (message: UiToPluginMessage) => {
   }
 
   if (message.type === "validate") {
-    const result = await validateAll(message.jsonText, message.templateId || defaultTemplateId);
+    const result = await validateAll(message.jsonText, message.templateId || defaultTemplateId, message.images);
     post({ type: "validation-result", result });
     return;
   }
 
   if (message.type === "generate") {
-    const result = await generate(message.jsonText, message.templateId || defaultTemplateId, message.signature);
+    const result = await generate(message.jsonText, message.templateId || defaultTemplateId, message.signature, message.images);
     post({ type: "generation-result", result });
   }
 };

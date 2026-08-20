@@ -1,10 +1,13 @@
 import { error, success } from "../shared/messages";
-import type { HairCampJson, StatusItem, TemplateConfig } from "../shared/types";
-import { TEXT_LAYER_PREFIX } from "../shared/constants";
+import type { HairCampJson, ImageSlotConfig, SelectedImagePayload, StatusItem, TemplateConfig } from "../shared/types";
+import { IMAGE_LAYER_PREFIX, TEXT_LAYER_PREFIX } from "../shared/constants";
+import { getImageSlot } from "../shared/images";
 
 type ContainerNode = SceneNode & ChildrenMixin;
+export type FillableImageNode = SceneNode & MinimalFillsMixin;
 
 const hasChildren = (node: SceneNode): node is ContainerNode => "children" in node;
+const hasFills = (node: SceneNode): node is FillableImageNode => "fills" in node && node.type !== "TEXT";
 
 function walk(node: SceneNode, visit: (node: SceneNode) => void): void {
   visit(node);
@@ -88,6 +91,34 @@ export function findTextLayer(section: SceneNode, layerName: string): { node?: T
   return { node: matches[0], items: [success(`${layerName} Text Layer를 찾았습니다.`)] };
 }
 
+export function findImageLayer(section: SceneNode, slot: ImageSlotConfig): { node?: FillableImageNode; items: StatusItem[] } {
+  const matches: SceneNode[] = [];
+  if (!hasChildren(section)) {
+    return { items: [error(`${section.name} 내부를 검색할 수 없습니다.`)] };
+  }
+
+  walk(section, (node) => {
+    if (node !== section && node.name === slot.layerName) {
+      matches.push(node);
+    }
+  });
+
+  if (!slot.layerName.startsWith(IMAGE_LAYER_PREFIX)) {
+    return { items: [error(`${slot.layerName} 레이어 이름은 IMG_로 시작해야 합니다.`)] };
+  }
+  if (matches.length === 0) {
+    return { items: [error(`${slot.sectionName} 안에서 ${slot.layerName} 레이어를 찾을 수 없습니다.`)] };
+  }
+  if (matches.length > 1) {
+    return { items: [error(`${slot.sectionName} 안에 ${slot.layerName} 레이어가 ${matches.length}개 발견되었습니다. 레이어 이름을 확인해 주세요.`)] };
+  }
+  if (!hasFills(matches[0]) || matches[0].fills === figma.mixed) {
+    return { items: [error(`${slot.layerName}은 이미지를 적용할 수 있는 레이어가 아닙니다. 사진 Fill이 적용된 도형 또는 프레임인지 확인해 주세요.`)] };
+  }
+
+  return { node: matches[0], items: [success(`${slot.displayName} 대상 레이어를 찾았습니다.`)] };
+}
+
 export function collectTargets(root: SceneNode, data: HairCampJson): { targets: Map<string, TextNode>; items: StatusItem[] } {
   const targets = new Map<string, TextNode>();
   const items: StatusItem[] = [];
@@ -103,6 +134,31 @@ export function collectTargets(root: SceneNode, data: HairCampJson): { targets: 
       if (layerResult.node) {
         targets.set(`${sectionName}\u0000${layerName}`, layerResult.node);
       }
+    }
+  }
+
+  return { targets, items };
+}
+
+export function collectImageTargets(root: SceneNode, images: SelectedImagePayload[]): { targets: Map<string, FillableImageNode>; items: StatusItem[] } {
+  const targets = new Map<string, FillableImageNode>();
+  const items: StatusItem[] = [];
+
+  for (const image of images) {
+    const slot = getImageSlot(image.slotId);
+    if (!slot) {
+      items.push(error(`${image.slotId} 이미지 슬롯을 찾을 수 없습니다.`));
+      continue;
+    }
+
+    const sectionResult = findSection(root, slot.sectionName);
+    items.push(...sectionResult.items);
+    if (!sectionResult.node) continue;
+
+    const layerResult = findImageLayer(sectionResult.node, slot);
+    items.push(...layerResult.items);
+    if (layerResult.node) {
+      targets.set(slot.id, layerResult.node);
     }
   }
 

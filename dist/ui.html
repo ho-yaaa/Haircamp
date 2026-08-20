@@ -138,7 +138,8 @@ textarea {
 }
 
 textarea:focus,
-select:focus {
+select:focus,
+.file-button:focus-within {
   border-color: #2670d9;
   box-shadow: 0 0 0 2px rgba(38, 112, 217, 0.16);
 }
@@ -219,6 +220,142 @@ button:disabled {
   font-size: 12px;
 }
 
+.helper-text {
+  margin-top: 8px;
+  color: #52606d;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.image-count {
+  flex: 0 0 auto;
+  color: #52606d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.image-group {
+  margin-top: 10px;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.image-group summary {
+  cursor: pointer;
+  padding: 9px 10px;
+  color: #1f2933;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.image-slot-list {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid #edf0f4;
+}
+
+.image-slot {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 9px;
+  padding: 10px;
+  border-top: 1px solid #edf0f4;
+}
+
+.image-slot:first-child {
+  border-top: 0;
+}
+
+.image-thumb {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #cad2dc;
+  border-radius: 6px;
+  background: #f7f8fa;
+}
+
+.image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-thumb.empty span {
+  color: #7b8794;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.image-meta {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.image-meta strong,
+.image-meta span,
+.image-meta small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-meta strong {
+  font-size: 12px;
+}
+
+.image-meta span,
+.image-meta small {
+  color: #66788a;
+  font-size: 11px;
+}
+
+.image-controls {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(86px, 1fr) 76px 58px;
+  gap: 8px;
+}
+
+.file-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #1f2933;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-button:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.scale-select {
+  min-height: 32px;
+  padding: 5px 7px;
+  font-size: 12px;
+}
+
 .status-list {
   display: grid;
   gap: 7px;
@@ -275,7 +412,9 @@ button:disabled {
     <script>"use strict";
 (() => {
   // src/shared/constants.ts
-  var PLUGIN_VERSION = "v1.0";
+  var PLUGIN_VERSION = "v1.1";
+  var MAX_IMAGE_DIMENSION = 4096;
+  var SUPPORTED_IMAGE_MIME_TYPES = ["image/png", "image/jpeg"];
   var templates = [
     {
       id: "haircamp-detail-v1",
@@ -285,16 +424,180 @@ button:disabled {
     }
   ];
   var defaultTemplateId = templates[0].id;
+  var imageSlots = [
+    {
+      id: "hero",
+      displayName: "\uD074\uB798\uC2A4 \uCEE4\uBC84 \uC774\uBBF8\uC9C0",
+      groupName: "\uD074\uB798\uC2A4 \uCEE4\uBC84",
+      sectionName: "Main banner",
+      layerName: "IMG_HERO",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook1",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 1",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK1",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook2",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 2",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK2",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook3",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 3",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK3",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "hook4",
+      displayName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0 4",
+      groupName: "\uD6C4\uD0B9 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_2",
+      layerName: "IMG_HOOK4",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "feature1",
+      displayName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0 1",
+      groupName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_3",
+      layerName: "IMG_FEATURE1",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "feature2",
+      displayName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0 2",
+      groupName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_3",
+      layerName: "IMG_FEATURE2",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "feature3",
+      displayName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0 3",
+      groupName: "\uAC15\uC758 \uD2B9\uC9D5 \uC774\uBBF8\uC9C0",
+      sectionName: "Class_3",
+      layerName: "IMG_FEATURE3",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "curriculum1",
+      displayName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0 1",
+      groupName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0",
+      sectionName: "Class_6",
+      layerName: "IMG_CURRICULUM1",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "curriculum2",
+      displayName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0 2",
+      groupName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0",
+      sectionName: "Class_6",
+      layerName: "IMG_CURRICULUM2",
+      required: false,
+      defaultScaleMode: "FILL"
+    },
+    {
+      id: "curriculum3",
+      displayName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0 3",
+      groupName: "\uCEE4\uB9AC\uD058\uB7FC \uC774\uBBF8\uC9C0",
+      sectionName: "Class_6",
+      layerName: "IMG_CURRICULUM3",
+      required: false,
+      defaultScaleMode: "FILL"
+    }
+  ];
 
-  // src/shared/schema.ts
-  function makeSignature(jsonText2, templateId) {
+  // src/shared/images.ts
+  var supportedExtensions = [".png", ".jpg", ".jpeg"];
+  function getImageSlot(slotId) {
+    return imageSlots.find((slot) => slot.id === slotId);
+  }
+  function isSupportedImageType(fileName2, mimeType) {
+    const lowerName = fileName2.toLowerCase();
+    const hasSupportedExtension = supportedExtensions.some((extension) => lowerName.endsWith(extension));
+    const hasSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(mimeType);
+    return hasSupportedExtension && hasSupportedMime;
+  }
+  function isValidScaleMode(value) {
+    return value === "FILL" || value === "FIT";
+  }
+  function makeImageSignature(images) {
+    const source = images.map((image) => `${image.slotId}:${image.fileName}:${image.mimeType}:${image.byteLength}:${image.width}x${image.height}:${image.scaleMode}`).sort().join("|");
     let hash = 5381;
-    const source = `${templateId}
-${jsonText2}`;
     for (let index = 0; index < source.length; index += 1) {
       hash = hash * 33 ^ source.charCodeAt(index);
     }
     return (hash >>> 0).toString(16);
+  }
+  function makeCombinedSignature(jsonText2, templateId, images) {
+    let hash = 5381;
+    const source = `${templateId}
+${jsonText2}
+${makeImageSignature(images)}`;
+    for (let index = 0; index < source.length; index += 1) {
+      hash = hash * 33 ^ source.charCodeAt(index);
+    }
+    return (hash >>> 0).toString(16);
+  }
+  function validateSelectedImages(images) {
+    const items = [];
+    const seen = /* @__PURE__ */ new Set();
+    if (images.length === 0) {
+      return [{ severity: "info", message: "\uC120\uD0DD\uB41C \uC774\uBBF8\uC9C0 \uC5C6\uC74C \xB7 \uD14D\uC2A4\uD2B8\uB9CC \uC0DD\uC131\uB429\uB2C8\uB2E4." }];
+    }
+    for (const image of images) {
+      const slot = getImageSlot(image.slotId);
+      if (!slot) {
+        items.push({ severity: "error", message: `${image.slotId} \uC774\uBBF8\uC9C0 \uC2AC\uB86F\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.` });
+        continue;
+      }
+      if (seen.has(image.slotId)) {
+        items.push({ severity: "error", message: `${slot.displayName} \uC774\uBBF8\uC9C0\uAC00 \uC911\uBCF5 \uC120\uD0DD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.` });
+      }
+      seen.add(image.slotId);
+      if (!isSupportedImageType(image.fileName, image.mimeType)) {
+        items.push({
+          severity: "error",
+          message: `${slot.displayName}: \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uB294 \uC774\uBBF8\uC9C0 \uD615\uC2DD\uC785\uB2C8\uB2E4. PNG, JPG \uB610\uB294 JPEG \uD30C\uC77C\uC744 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.`
+        });
+      }
+      if (image.width <= 0 || image.height <= 0 || image.byteLength <= 0 || image.bytes.length === 0) {
+        items.push({ severity: "error", message: `${slot.displayName}: \uC774\uBBF8\uC9C0 \uB370\uC774\uD130\uAC00 \uC815\uC0C1\uC801\uC774\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.` });
+      }
+      if (image.width > MAX_IMAGE_DIMENSION || image.height > MAX_IMAGE_DIMENSION) {
+        items.push({
+          severity: "error",
+          message: `${slot.displayName}: \uC774\uBBF8\uC9C0 \uD06C\uAE30\uAC00 ${MAX_IMAGE_DIMENSION}px\uC744 \uCD08\uACFC\uD569\uB2C8\uB2E4. \uD604\uC7AC ${image.width}x${image.height}px\uC785\uB2C8\uB2E4.`
+        });
+      }
+      if (!isValidScaleMode(image.scaleMode)) {
+        items.push({ severity: "error", message: `${slot.displayName}: \uC774\uBBF8\uC9C0 \uB9DE\uCDA4 \uBC29\uC2DD\uC740 FILL \uB610\uB294 FIT\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4.` });
+      }
+    }
+    if (!items.some((item) => item.severity === "error")) {
+      items.push({ severity: "success", message: `\uC120\uD0DD\uD55C \uC774\uBBF8\uC9C0 ${images.length}\uAC1C \uAC80\uC99D \uC644\uB8CC` });
+      items.push({ severity: "info", message: "\uC120\uD0DD\uD558\uC9C0 \uC54A\uC740 \uC774\uBBF8\uC9C0 \uC601\uC5ED\uC740 \uAE30\uC874 \uC774\uBBF8\uC9C0\uAC00 \uC720\uC9C0\uB429\uB2C8\uB2E4." });
+    }
+    return items;
   }
 
   // src/ui/main.ts
@@ -308,8 +611,31 @@ ${jsonText2}`;
   var statusItems = [];
   var lastValidSignature = "";
   var lastValidationOk = false;
+  var selectedImages = {};
+  var scaleModes = Object.fromEntries(imageSlots.map((slot) => [slot.id, slot.defaultScaleMode]));
   function post(message) {
     parent.postMessage({ pluginMessage: message }, "*");
+  }
+  function getSelectedImagePayloads() {
+    return imageSlots.flatMap((slot) => {
+      const image = selectedImages[slot.id];
+      if (!image) return [];
+      return [
+        {
+          slotId: image.slotId,
+          fileName: image.fileName,
+          mimeType: image.mimeType,
+          byteLength: image.byteLength,
+          width: image.width,
+          height: image.height,
+          scaleMode: scaleModes[slot.id] ?? image.scaleMode,
+          bytes: image.bytes
+        }
+      ];
+    });
+  }
+  function currentSignature() {
+    return makeCombinedSignature(jsonText, selectedTemplateId, getSelectedImagePayloads());
   }
   function severityMark(severity) {
     if (severity === "success") return "\u2713";
@@ -341,6 +667,66 @@ ${jsonText2}`;
     uiState = jsonText.length > 0 ? "has-json" : "idle";
     render();
   }
+  function readImageDimensions(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxPreviewSize = 96;
+        const ratio = Math.min(maxPreviewSize / image.width, maxPreviewSize / image.height, 1);
+        canvas.width = Math.max(1, Math.round(image.width * ratio));
+        canvas.height = Math.max(1, Math.round(image.height * ratio));
+        canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const thumbnailUrl = canvas.toDataURL("image/jpeg", 0.75);
+        URL.revokeObjectURL(url);
+        resolve({ width: image.width, height: image.height, thumbnailUrl });
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("\uC774\uBBF8\uC9C0 \uD30C\uC77C\uC744 \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."));
+      };
+      image.src = url;
+    });
+  }
+  async function readImageFile(slotId, file) {
+    const slot = imageSlots.find((item) => item.id === slotId);
+    if (!slot) return;
+    try {
+      const { width, height, thumbnailUrl } = await readImageDimensions(file);
+      const bytes = [...new Uint8Array(await file.arrayBuffer())];
+      const image = {
+        slotId,
+        fileName: file.name,
+        mimeType: file.type,
+        byteLength: file.size,
+        width,
+        height,
+        scaleMode: scaleModes[slotId] ?? slot.defaultScaleMode,
+        bytes,
+        thumbnailUrl
+      };
+      const validationItems = validateSelectedImages([image]);
+      const errorItem = validationItems.find((item) => item.severity === "error");
+      if (errorItem) {
+        statusItems = [errorItem];
+        uiState = "failed";
+        render();
+        return;
+      }
+      selectedImages = { ...selectedImages, [slotId]: image };
+      resetValidation([{ severity: "info", message: `${slot.displayName}: ${file.name} \uC774\uBBF8\uC9C0\uB97C \uC120\uD0DD\uD588\uC2B5\uB2C8\uB2E4.` }]);
+    } catch (caught) {
+      statusItems = [{ severity: "error", message: `${slot.displayName}: ${caught instanceof Error ? caught.message : "\uC774\uBBF8\uC9C0 \uD30C\uC77C\uC744 \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."}` }];
+      uiState = "failed";
+      render();
+    }
+  }
+  function clearImage(slotId) {
+    const slot = imageSlots.find((item) => item.id === slotId);
+    selectedImages = { ...selectedImages, [slotId]: void 0 };
+    resetValidation([{ severity: "info", message: `${slot?.displayName ?? slotId} \uC120\uD0DD\uC744 \uCDE8\uC18C\uD588\uC2B5\uB2C8\uB2E4.` }]);
+  }
   function renderStatus() {
     if (statusItems.length === 0) {
       return `<div class="empty-status">JSON\uC744 \uC785\uB825\uD55C \uB4A4 Validate\uB97C \uC2E4\uD589\uD558\uC138\uC694.</div>`;
@@ -353,12 +739,55 @@ ${jsonText2}`;
       return map[char];
     });
   }
+  function renderImageGroups(isBusy) {
+    const groupNames = [...new Set(imageSlots.map((slot) => slot.groupName))];
+    return groupNames.map((groupName) => {
+      const slots = imageSlots.filter((slot) => slot.groupName === groupName);
+      return `
+        <details class="image-group" open>
+          <summary>${escapeHtml(groupName)}</summary>
+          <div class="image-slot-list">
+            ${slots.map((slot) => renderImageSlot(slot.id, isBusy)).join("")}
+          </div>
+        </details>
+      `;
+    }).join("");
+  }
+  function renderImageSlot(slotId, isBusy) {
+    const slot = imageSlots.find((item) => item.id === slotId);
+    if (!slot) return "";
+    const image = selectedImages[slotId];
+    const scaleMode = scaleModes[slotId] ?? slot.defaultScaleMode;
+    return `
+    <div class="image-slot">
+      <div class="image-thumb ${image ? "" : "empty"}">
+        ${image ? `<img src="${image.thumbnailUrl}" alt="" />` : `<span>IMG</span>`}
+      </div>
+      <div class="image-meta">
+        <strong>${escapeHtml(slot.displayName)}</strong>
+        <span>${escapeHtml(slot.sectionName)} \xB7 ${escapeHtml(slot.layerName)}</span>
+        <small>${image ? `${escapeHtml(image.fileName)} \xB7 ${image.width}x${image.height}px` : "\uC120\uD0DD \uC548 \uD568 \xB7 \uAE30\uC874 \uC774\uBBF8\uC9C0 \uC720\uC9C0"}</small>
+      </div>
+      <div class="image-controls">
+        <label class="file-button">
+          \uC0AC\uC9C4 \uC120\uD0DD
+          <input class="image-file-input" data-slot-id="${slot.id}" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" ${isBusy ? "disabled" : ""} />
+        </label>
+        <select class="scale-select" data-slot-id="${slot.id}" ${isBusy ? "disabled" : ""}>
+          <option value="FILL" ${scaleMode === "FILL" ? "selected" : ""}>FILL</option>
+          <option value="FIT" ${scaleMode === "FIT" ? "selected" : ""}>FIT</option>
+        </select>
+        <button class="ghost clear-image-btn" data-slot-id="${slot.id}" ${isBusy || !image ? "disabled" : ""}>\uCDE8\uC18C</button>
+      </div>
+    </div>
+  `;
+  }
   function render() {
     const isBusy = uiState === "validating" || uiState === "generating";
-    const currentSignature = makeSignature(jsonText, selectedTemplateId);
     const canValidate = jsonText.length > 0 && !isBusy;
-    const canGenerate = lastValidationOk && lastValidSignature === currentSignature && !isBusy;
+    const canGenerate = lastValidationOk && lastValidSignature === currentSignature() && !isBusy;
     const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
+    const selectedImageCount = getSelectedImagePayloads().length;
     appRoot.innerHTML = `
     <main>
       <header class="topbar">
@@ -387,6 +816,15 @@ ${jsonText2}`;
           <input id="fileInput" type="file" accept=".json,application/json" ${isBusy ? "disabled" : ""} />
           <span>JSON \uD30C\uC77C \uC5C5\uB85C\uB4DC \uB610\uB294 \uB4DC\uB798\uADF8 \uC564 \uB4DC\uB86D</span>
         </div>
+      </section>
+
+      <section class="band image-upload-band">
+        <div class="section-title">
+          <h2>\uC774\uBBF8\uC9C0 \uC5C5\uB85C\uB4DC \xB7 \uC120\uD0DD\uC0AC\uD56D</h2>
+          <span class="image-count">${selectedImageCount}/11 \uC120\uD0DD\uB428</span>
+        </div>
+        <p class="helper-text">\uAC01 \uC601\uC5ED\uC5D0\uC11C \uC0AC\uC9C4\uC744 \uC9C1\uC811 \uC120\uD0DD\uD558\uBA74 \uD30C\uC77C\uBA85\uC744 \uBCC0\uACBD\uD558\uC9C0 \uC54A\uC544\uB3C4 \uB429\uB2C8\uB2E4. \uC774\uBBF8\uC9C0\uB97C \uC120\uD0DD\uD558\uC9C0 \uC54A\uC740 \uC601\uC5ED\uC740 \uD15C\uD50C\uB9BF\uC758 \uAE30\uC874 \uC774\uBBF8\uC9C0\uAC00 \uC720\uC9C0\uB429\uB2C8\uB2E4.</p>
+        ${renderImageGroups(isBusy)}
       </section>
 
       <section class="band compact">
@@ -439,6 +877,34 @@ ${jsonText2}`;
       const file = event.target.files?.[0];
       if (file) await readJsonFile(file);
     });
+    document.querySelectorAll(".image-file-input").forEach((input) => {
+      input.addEventListener("change", async (event) => {
+        const target = event.target;
+        const slotId = target.dataset.slotId;
+        const file = target.files?.[0];
+        if (slotId && file) await readImageFile(slotId, file);
+      });
+    });
+    document.querySelectorAll(".scale-select").forEach((select) => {
+      select.addEventListener("change", (event) => {
+        const target = event.target;
+        const slotId = target.dataset.slotId;
+        const value = target.value === "FIT" ? "FIT" : "FILL";
+        if (!slotId) return;
+        scaleModes = { ...scaleModes, [slotId]: value };
+        const image = selectedImages[slotId];
+        if (image) {
+          selectedImages = { ...selectedImages, [slotId]: { ...image, scaleMode: value } };
+        }
+        resetValidation([{ severity: "info", message: "\uC774\uBBF8\uC9C0 \uB9DE\uCDA4 \uBC29\uC2DD\uC774 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC Validate\uB97C \uC2E4\uD589\uD574 \uC8FC\uC138\uC694." }]);
+      });
+    });
+    document.querySelectorAll(".clear-image-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        const slotId = button.dataset.slotId;
+        if (slotId) clearImage(slotId);
+      });
+    });
     const dropZone = document.querySelector("#dropZone");
     dropZone?.addEventListener("dragover", (event) => {
       event.preventDefault();
@@ -453,15 +919,21 @@ ${jsonText2}`;
     });
     document.querySelector("#validateBtn")?.addEventListener("click", () => {
       uiState = "validating";
-      statusItems = [{ severity: "info", message: "JSON\uACFC Figma \uD15C\uD50C\uB9BF\uC744 \uAC80\uC0AC\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." }];
+      statusItems = [{ severity: "info", message: "JSON, \uD14D\uC2A4\uD2B8 \uB808\uC774\uC5B4, \uC120\uD0DD \uC774\uBBF8\uC9C0 \uC2AC\uB86F\uC744 \uAC80\uC0AC\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." }];
       render();
-      post({ type: "validate", jsonText, templateId: selectedTemplateId, signature: makeSignature(jsonText, selectedTemplateId) });
+      post({ type: "validate", jsonText, templateId: selectedTemplateId, signature: currentSignature(), images: getSelectedImagePayloads() });
     });
     document.querySelector("#generateBtn")?.addEventListener("click", () => {
       uiState = "generating";
-      statusItems = [{ severity: "info", message: "\uBCF5\uC81C\uBCF8\uC744 \uC0DD\uC131\uD558\uACE0 \uD14D\uC2A4\uD2B8\uB97C \uC785\uB825\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." }];
+      const imageCount = getSelectedImagePayloads().length;
+      statusItems = [
+        {
+          severity: "info",
+          message: imageCount > 0 ? "\uBCF5\uC81C\uBCF8\uC744 \uC0DD\uC131\uD558\uACE0 \uD14D\uC2A4\uD2B8\uC640 \uC774\uBBF8\uC9C0\uB97C \uC801\uC6A9\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." : "\uBCF5\uC81C\uBCF8\uC744 \uC0DD\uC131\uD558\uACE0 \uD14D\uC2A4\uD2B8\uB97C \uC785\uB825\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
+        }
+      ];
       render();
-      post({ type: "generate", jsonText, templateId: selectedTemplateId, signature: lastValidSignature });
+      post({ type: "generate", jsonText, templateId: selectedTemplateId, signature: lastValidSignature, images: getSelectedImagePayloads() });
     });
   }
   window.onmessage = (event) => {

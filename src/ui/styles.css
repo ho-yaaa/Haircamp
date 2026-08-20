@@ -132,7 +132,8 @@ textarea {
 }
 
 textarea:focus,
-select:focus {
+select:focus,
+.file-button:focus-within {
   border-color: #2670d9;
   box-shadow: 0 0 0 2px rgba(38, 112, 217, 0.16);
 }
@@ -210,6 +211,142 @@ button:disabled {
   border-color: #cad2dc;
   background: #ffffff;
   color: #52606d;
+  font-size: 12px;
+}
+
+.helper-text {
+  margin-top: 8px;
+  color: #52606d;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.image-count {
+  flex: 0 0 auto;
+  color: #52606d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.image-group {
+  margin-top: 10px;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.image-group summary {
+  cursor: pointer;
+  padding: 9px 10px;
+  color: #1f2933;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.image-slot-list {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid #edf0f4;
+}
+
+.image-slot {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 9px;
+  padding: 10px;
+  border-top: 1px solid #edf0f4;
+}
+
+.image-slot:first-child {
+  border-top: 0;
+}
+
+.image-thumb {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #cad2dc;
+  border-radius: 6px;
+  background: #f7f8fa;
+}
+
+.image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-thumb.empty span {
+  color: #7b8794;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.image-meta {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.image-meta strong,
+.image-meta span,
+.image-meta small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-meta strong {
+  font-size: 12px;
+}
+
+.image-meta span,
+.image-meta small {
+  color: #66788a;
+  font-size: 11px;
+}
+
+.image-controls {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(86px, 1fr) 76px 58px;
+  gap: 8px;
+}
+
+.file-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #1f2933;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-button:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.scale-select {
+  min-height: 32px;
+  padding: 5px 7px;
   font-size: 12px;
 }
 

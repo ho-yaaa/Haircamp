@@ -5,6 +5,29 @@ export type TemplateConfig = {
   duplicateGap: number;
 };
 
+export type ImageScaleMode = "FILL" | "FIT";
+
+export type ImageSlotConfig = {
+  id: string;
+  displayName: string;
+  groupName: string;
+  sectionName: string;
+  layerName: string;
+  required: boolean;
+  defaultScaleMode: ImageScaleMode;
+};
+
+export type SelectedImagePayload = {
+  slotId: string;
+  fileName: string;
+  mimeType: string;
+  byteLength: number;
+  width: number;
+  height: number;
+  scaleMode: ImageScaleMode;
+  bytes: number[];
+};
+
 export type HairCampJson = {
   frameName: string;
   sections: Record<string, Record<string, string>>;
@@ -23,11 +46,12 @@ export type ValidationResult = {
   items: StatusItem[];
   signature?: string;
   targetCount?: number;
+  imageCount?: number;
 };
 
 export type UiToPluginMessage =
-  | { type: "validate"; jsonText: string; templateId: string; signature: string }
-  | { type: "generate"; jsonText: string; templateId: string; signature: string }
+  | { type: "validate"; jsonText: string; templateId: string; signature: string; images: SelectedImagePayload[] }
+  | { type: "generate"; jsonText: string; templateId: string; signature: string; images: SelectedImagePayload[] }
   | { type: "request-file-info" };
 
 export type PluginToUiMessage =
